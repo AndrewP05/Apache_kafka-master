@@ -11,6 +11,7 @@ import java.awt.*;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Properties;
+import java.util.UUID;
 
 public class ConsumerUI extends JFrame {
 
@@ -35,15 +36,15 @@ public class ConsumerUI extends JFrame {
         areaMensajes.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(areaMensajes);
 
-        // ComboBox que se llena con los tópicos actuales de Kafka
+        // Inicializamos con la lista dinámica de tópicos
         topicComboBox = new JComboBox<>(KafkaUtils.getTopics());
         topicComboBox.addActionListener(e -> {
             detenerConsumo();
-            areaMensajes.setText(""); // Limpiar el área al cambiar tópico
+            areaMensajes.setText("");
             iniciarConsumo(getSelectedTopic());
         });
         
-        // Botón para refrescar la lista de tópicos
+        // Botón para refrescar la lista de tópicos dinámicamente
         refrescarButton = new JButton("Refrescar Tópicos");
         refrescarButton.addActionListener(e -> {
             String[] topics = KafkaUtils.getTopics();
@@ -63,10 +64,14 @@ public class ConsumerUI extends JFrame {
         return topicComboBox.getSelectedItem().toString();
     }
 
+    /**
+     * Se asigna un group.id único para que cada consumidor actúe de forma independiente y reciba
+     * cada mensaje publicado en el tópico.
+     */
     private Properties getConsumerProperties() {
         Properties props = new Properties();
-        props.put("bootstrap.servers", "localhost:9092"); // Ajusta según tu entorno
-        props.put("group.id", "grupo_consumidor");
+        props.put("bootstrap.servers", "localhost:9092");
+        props.put("group.id", "grupo_consumidor_" + UUID.randomUUID().toString());
         props.put("enable.auto.commit", "true");
         props.put("auto.commit.interval.ms", "1000");
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");

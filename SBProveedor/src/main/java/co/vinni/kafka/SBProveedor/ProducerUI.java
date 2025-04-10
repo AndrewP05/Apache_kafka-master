@@ -24,9 +24,8 @@ public class ProducerUI extends JFrame {
     public ProducerUI() {
         super("Interfaz del Proveedor - Productor");
 
-        // Configuración del productor (puedes extraer esta configuración de tu proyecto)
         Properties props = new Properties();
-        props.put("bootstrap.servers", "localhost:9092"); // Ajusta según tu entorno
+        props.put("bootstrap.servers", "localhost:9092");
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         producer = new KafkaProducer<>(props);
@@ -42,10 +41,10 @@ public class ProducerUI extends JFrame {
         mensajeField = new JTextField(30);
         enviarButton = new JButton("Enviar Mensaje");
 
-        // ComboBox con tópicos obtenidos de Kafka
+        // Inicializamos el JComboBox con los tópicos actuales del clúster
         topicComboBox = new JComboBox<>(KafkaUtils.getTopics());
         
-        // Botón para refrescar la lista de tópicos
+        // Botón para refrescar la lista de tópicos dinámicamente
         refrescarButton = new JButton("Refrescar Tópicos");
         refrescarButton.addActionListener((ActionEvent e) -> {
             String[] topics = KafkaUtils.getTopics();
@@ -54,21 +53,19 @@ public class ProducerUI extends JFrame {
 
         enviarButton.addActionListener(e -> {
             String mensaje = mensajeField.getText();
-            String topic = topicComboBox.getSelectedItem().toString();
-            if (mensaje != null && !mensaje.isEmpty()) {
+            if (mensaje != null && !mensaje.isEmpty() && topicComboBox.getItemCount() > 0) {
+                String topic = topicComboBox.getSelectedItem().toString();
                 enviarMensaje(topic, mensaje);
                 mensajeField.setText("");
             } else {
-                JOptionPane.showMessageDialog(ProducerUI.this, "Ingrese un mensaje", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(ProducerUI.this, "Ingrese un mensaje y verifique que existan tópicos", "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
-        // Organización de los componentes en el panel
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
 
-        // Fila 0: Selección de tópico y botón de refrescar
         gbc.gridx = 0;
         gbc.gridy = 0;
         panel.add(new JLabel("Tópico:"), gbc);
@@ -77,7 +74,6 @@ public class ProducerUI extends JFrame {
         gbc.gridx = 2;
         panel.add(refrescarButton, gbc);
 
-        // Fila 1: Campo de mensaje
         gbc.gridx = 0;
         gbc.gridy = 1;
         panel.add(new JLabel("Mensaje:"), gbc);
@@ -86,7 +82,6 @@ public class ProducerUI extends JFrame {
         panel.add(mensajeField, gbc);
         gbc.gridwidth = 1;
 
-        // Fila 2: Botón de enviar
         gbc.gridx = 1;
         gbc.gridy = 2;
         panel.add(enviarButton, gbc);
@@ -98,7 +93,7 @@ public class ProducerUI extends JFrame {
         try {
             ProducerRecord<String, String> record = new ProducerRecord<>(topic, mensaje);
             Future<RecordMetadata> future = producer.send(record);
-            RecordMetadata metadata = future.get(); // Espera la confirmación
+            RecordMetadata metadata = future.get();
             System.out.println("Mensaje enviado a tópico: " + topic 
                     + " | Partición: " + metadata.partition() 
                     + " | Offset: " + metadata.offset());

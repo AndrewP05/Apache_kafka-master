@@ -8,10 +8,16 @@ import co.vinni.kafka.SBConsumidor.config.KafkaUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.UUID;
+
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ConsumerUI extends JFrame {
 
@@ -36,15 +42,13 @@ public class ConsumerUI extends JFrame {
         areaMensajes.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(areaMensajes);
 
-        // Inicializamos con la lista dinámica de tópicos
         topicComboBox = new JComboBox<>(KafkaUtils.getTopics());
         topicComboBox.addActionListener(e -> {
             detenerConsumo();
             areaMensajes.setText("");
             iniciarConsumo(getSelectedTopic());
         });
-        
-        // Botón para refrescar la lista de tópicos dinámicamente
+
         refrescarButton = new JButton("Refrescar Tópicos");
         refrescarButton.addActionListener(e -> {
             String[] topics = KafkaUtils.getTopics();
@@ -64,10 +68,6 @@ public class ConsumerUI extends JFrame {
         return topicComboBox.getSelectedItem().toString();
     }
 
-    /**
-     * Se asigna un group.id único para que cada consumidor actúe de forma independiente y reciba
-     * cada mensaje publicado en el tópico.
-     */
     private Properties getConsumerProperties() {
         Properties props = new Properties();
         props.put("bootstrap.servers", "localhost:9092");
@@ -88,11 +88,16 @@ public class ConsumerUI extends JFrame {
                 while (!Thread.currentThread().isInterrupted()) {
                     ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
                     for (ConsumerRecord<String, String> record : records) {
-                        String mensaje = "Tópico: " + topic 
-                                + " | Partición: " + record.partition() 
-                                + " | Offset: " + record.offset() 
-                                + " -> " + record.value() + "\n";
+                        String mensajePlano = record.value();
+                        String mensaje = "Tópico: " + topic
+                                + " | Partición: " + record.partition()
+                                + " | Offset: " + record.offset()
+                                + " -> " + mensajePlano + "\n";
+
                         SwingUtilities.invokeLater(() -> areaMensajes.append(mensaje));
+
+                        String[] campos = mensajePlano.split(" ");
+                        guardarEnExcel(topic, campos);
                     }
                 }
             } catch (Exception ex) {
@@ -102,6 +107,47 @@ public class ConsumerUI extends JFrame {
             }
         });
         consumerThread.start();
+    }
+
+    private void guardarEnExcel(String topic, String[] campos) {
+        try {
+            String archivo = "registros.xlsx";
+            File file = new File(archivo);
+            Workbook workbook;
+            Sheet hoja;
+
+            if (file.exists()) {
+                FileInputStream fis = new FileInputStream(file);
+                workbook = new XSSFWorkbook(fis);
+                hoja = workbook.getSheet(topic);
+                if (hoja == null) {
+                    hoja = workbook.createSheet(topic);
+                }
+            } else {
+                workbook = new XSSFWorkbook();
+                hoja = workbook.createSheet(topic);
+            }
+
+            int ultimaFila = hoja.getLastRowNum();
+            if (ultimaFila == 0 && hoja.getRow(0) == null) {
+                Row header = hoja.createRow(0);
+                for (int i = 0; i < campos.length; i++) {
+                    header.createCell(i).setCellValue("Campo " + (i + 1));
+                }
+            }
+
+            Row fila = hoja.createRow(hoja.getLastRowNum() + 1);
+            for (int i = 0; i < campos.length; i++) {
+                fila.createCell(i).setCellValue(campos[i]);
+            }
+
+            FileOutputStream fos = new FileOutputStream(archivo);
+            workbook.write(fos);
+            fos.close();
+            workbook.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void detenerConsumo() {

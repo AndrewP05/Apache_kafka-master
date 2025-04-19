@@ -104,6 +104,8 @@ public class ProducerUI extends JFrame {
         // 4) Botón de enviar
         enviarButton = new JButton("Enviar");
         enviarButton.addActionListener(e -> onEnviar());
+        
+        
 
         // 5) Montaje de la UI
         JPanel north = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -136,6 +138,7 @@ public class ProducerUI extends JFrame {
                       stSemestre.getText().trim() + ";" +
                       stMateria.getText().trim()  + ";" +
                       stHora.getText().trim();
+                      
         } else if ("maestros".equals(topic)) {
             mensaje = mtNombre.getText().trim()       + ";" +
                       mtId.getText().trim()           + ";" +
@@ -148,10 +151,35 @@ public class ProducerUI extends JFrame {
         if (!mensaje.isEmpty()) {
             producer.send(new ProducerRecord<>(topic, mensaje));
             JOptionPane.showMessageDialog(this, "Enviado:\n" + mensaje);
+            limpiarCampos();
         } else {
             JOptionPane.showMessageDialog(this, "Mensaje vacío, completa los campos.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    private void limpiarCampos() {
+        String topic = ((String) topicComboBox.getSelectedItem()).trim().toLowerCase();
+    
+        if ("estudiantes".equals(topic)) {
+            stNombre.setText("");
+            stId.setText("");
+            stCarrera.setText("");
+            stSemestre.setText("");
+            stMateria.setText("");
+            stHora.setText("");
+            stNombre.requestFocus();
+        } else if ("maestros".equals(topic)) {
+            mtNombre.setText("");
+            mtId.setText("");
+            mtDepartamento.setText("");
+            mtMateria.setText("");
+            mtOficina.setText("");
+            mtHorario.setText("");
+            mtNombre.requestFocus();
+        }
+    }
+
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new ProducerUI().setVisible(true));

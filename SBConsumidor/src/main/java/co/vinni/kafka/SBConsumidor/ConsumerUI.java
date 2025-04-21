@@ -96,7 +96,11 @@ public class ConsumerUI extends JFrame {
 
                         SwingUtilities.invokeLater(() -> areaMensajes.append(mensaje));
 
-                        String[] campos = mensajePlano.split(" ");
+                        // Separar el mensaje con ';' para columnas
+                        String[] campos = mensajePlano.split(";");
+                        for (int i = 0; i < campos.length; i++) {
+                            campos[i] = campos[i].trim();
+                        }
                         guardarEnExcel(topic, campos);
                     }
                 }
@@ -123,6 +127,7 @@ public class ConsumerUI extends JFrame {
                 if (hoja == null) {
                     hoja = workbook.createSheet(topic);
                 }
+                fis.close();
             } else {
                 workbook = new XSSFWorkbook();
                 hoja = workbook.createSheet(topic);

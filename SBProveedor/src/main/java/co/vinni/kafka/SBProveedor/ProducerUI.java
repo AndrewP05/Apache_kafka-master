@@ -23,9 +23,9 @@ public class ProducerUI extends JFrame {
     private JButton enviarButton;
 
     // Campos para 'estudiantes'
-    private JTextField stNombre, stId, stCarrera, stSemestre, stMateria, stHora;
+    private JTextField stNombre, stId, stCarrera, stMateria, stGrupo, stHora;
     // Campos para 'maestros'
-    private JTextField mtNombre, mtId, mtDepartamento, mtMateria, mtOficina, mtHorario;
+    private JTextField mtNombre, mtId, mtMateria, mtGrupo, mtHora, mtNota;
 
     private KafkaProducer<String,String> producer;
 
@@ -82,18 +82,18 @@ public class ProducerUI extends JFrame {
         stNombre   = new JTextField(); studentForm.add(new JLabel("Nombre:"));    studentForm.add(stNombre);
         stId       = new JTextField(); studentForm.add(new JLabel("ID:"));        studentForm.add(stId);
         stCarrera  = new JTextField(); studentForm.add(new JLabel("Carrera:"));   studentForm.add(stCarrera);
-        stSemestre = new JTextField(); studentForm.add(new JLabel("Semestre:"));  studentForm.add(stSemestre);
-        stMateria  = new JTextField(); studentForm.add(new JLabel("Materia:"));   studentForm.add(stMateria);
+        stMateria = new JTextField(); studentForm.add(new JLabel("Materia:"));  studentForm.add(stMateria);
+        stGrupo  = new JTextField(); studentForm.add(new JLabel("Grupo:"));   studentForm.add(stGrupo);
         stHora     = new JTextField(); studentForm.add(new JLabel("Hora:"));      studentForm.add(stHora);
 
         // -- Formulario MAESTROS --
         JPanel teacherForm = new JPanel(new GridLayout(6, 2, 5, 5));
         mtNombre       = new JTextField(); teacherForm.add(new JLabel("Nombre:"));      teacherForm.add(mtNombre);
         mtId           = new JTextField(); teacherForm.add(new JLabel("ID:"));          teacherForm.add(mtId);
-        mtDepartamento = new JTextField(); teacherForm.add(new JLabel("Departamento:")); teacherForm.add(mtDepartamento);
-        mtMateria      = new JTextField(); teacherForm.add(new JLabel("Materia:"));     teacherForm.add(mtMateria);
-        mtOficina      = new JTextField(); teacherForm.add(new JLabel("Oficina:"));     teacherForm.add(mtOficina);
-        mtHorario      = new JTextField(); teacherForm.add(new JLabel("Horario:"));     teacherForm.add(mtHorario);
+        mtMateria = new JTextField(); teacherForm.add(new JLabel("Materia:")); teacherForm.add(mtMateria);
+        mtGrupo      = new JTextField(); teacherForm.add(new JLabel("Grupo:"));     teacherForm.add(mtGrupo);
+        mtHora      = new JTextField(); teacherForm.add(new JLabel("Hora:"));     teacherForm.add(mtHora);
+        mtNota      = new JTextField(); teacherForm.add(new JLabel("Nota:"));     teacherForm.add(mtNota);
 
         // 3) Panel con CardLayout
         cardLayout = new CardLayout();
@@ -135,17 +135,17 @@ public class ProducerUI extends JFrame {
             mensaje = stNombre.getText().trim()   + ";" +
                       stId.getText().trim()       + ";" +
                       stCarrera.getText().trim()  + ";" +
-                      stSemestre.getText().trim() + ";" +
-                      stMateria.getText().trim()  + ";" +
+                      stMateria.getText().trim() + ";" +
+                      stGrupo.getText().trim()  + ";" +
                       stHora.getText().trim();
                       
         } else if ("maestros".equals(topic)) {
             mensaje = mtNombre.getText().trim()       + ";" +
                       mtId.getText().trim()           + ";" +
-                      mtDepartamento.getText().trim() + ";" +
-                      mtMateria.getText().trim()      + ";" +
-                      mtOficina.getText().trim()      + ";" +
-                      mtHorario.getText().trim();
+                      mtMateria.getText().trim() + ";" +
+                      mtGrupo.getText().trim()      + ";" +
+                      mtHora.getText().trim()      + ";" +
+                      mtNota.getText().trim();
         }
 
         if (!mensaje.isEmpty()) {
@@ -164,17 +164,17 @@ public class ProducerUI extends JFrame {
             stNombre.setText("");
             stId.setText("");
             stCarrera.setText("");
-            stSemestre.setText("");
             stMateria.setText("");
+            stGrupo.setText("");
             stHora.setText("");
             stNombre.requestFocus();
         } else if ("maestros".equals(topic)) {
             mtNombre.setText("");
             mtId.setText("");
-            mtDepartamento.setText("");
             mtMateria.setText("");
-            mtOficina.setText("");
-            mtHorario.setText("");
+            mtGrupo.setText("");
+            mtHora.setText("");
+            mtNota.setText("");
             mtNombre.requestFocus();
         }
     }
